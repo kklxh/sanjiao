@@ -4,94 +4,41 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>三角洲行动下单系统</title>
-
   <style>
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#f4f7ff;
-      font-family: system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",Arial;
-    }
-    .box{
-      width:380px;
-      background:#fff;
-      border-radius:16px;
-      padding:20px;
-      box-shadow:0 12px 30px rgba(0,0,0,.12);
-    }
-    h1{text-align:center;margin:0 0 16px}
-    .step{margin-bottom:16px}
+    :root{--b:#2563eb;--g:#16a34a;--line:#cbd5e1;--bg:#f4f7ff;}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);
+      font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",Arial;}
+    .box{width:420px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 12px 30px rgba(0,0,0,.12);}
+    h1{text-align:center;margin:0 0 14px}
+    .step{margin-bottom:14px}
     .step b{display:block;margin-bottom:8px}
     .btns{display:flex;flex-wrap:wrap;gap:8px}
-    button{
-      padding:8px 12px;
-      border-radius:10px;
-      border:1px solid #cbd5e1;
-      background:#fff;
-      font-weight:600;
-      cursor:pointer;
-    }
-    button.active{
-      background:#2563eb;
-      color:#fff;
-      border-color:#2563eb;
-    }
+    button{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:700;cursor:pointer}
+    button.active{background:var(--b);color:#fff;border-color:var(--b)}
+    button:disabled{opacity:.5;cursor:not-allowed}
     .qty{display:flex;align-items:center;gap:12px}
     .qty button{width:36px;height:36px}
-    .price{
-      text-align:center;
-      font-size:24px;
-      font-weight:900;
-      color:#16a34a;
-      margin:16px 0;
-    }
-    .pay{
-      width:100%;
-      padding:12px;
-      border:none;
-      border-radius:12px;
-      background:#2563eb;
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-    }
+    .price{text-align:center;font-size:26px;font-weight:900;color:var(--g);margin:14px 0}
+    .pay{width:100%;padding:12px;border:none;border-radius:12px;background:var(--b);color:#fff;font-weight:900;cursor:pointer}
     .pay:disabled{opacity:.5;cursor:not-allowed}
-
+    .grid{display:grid;gap:10px}
+    .in{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);outline:none;font-weight:600}
+    .hint{font-size:12px;color:#64748b;line-height:1.5;margin-top:6px}
+    .summary{border:1px dashed var(--line);border-radius:14px;padding:12px;background:#f8fafc;font-size:13px;line-height:1.65}
+    .summary strong{color:#0f172a}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:460px){.box{width:92vw}.row2{grid-template-columns:1fr}}
     /* 弹窗 */
-    .mask{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-    }
-    .modal{
-      background:#fff;
-      width:300px;
-      padding:16px;
-      border-radius:16px;
-      text-align:center;
-    }
-    .qr{
-      width:220px;
-      height:220px;
-      margin:12px auto;
-      border-radius:12px;
-      overflow:hidden;
-      background:#f1f5f9;
-    }
-    .qr img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-    }
+    .mask{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px}
+    .modal{background:#fff;width:min(360px,100%);padding:16px;border-radius:16px;text-align:center}
+    .qr{width:230px;height:230px;margin:10px auto;border-radius:12px;overflow:hidden;background:#f1f5f9;border:1px solid var(--line)}
+    .qr img{width:100%;height:100%;object-fit:contain}
+    .btn2{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:900;cursor:pointer}
+    .btn2:hover{background:#f8fafc}
+    .copy{margin-top:10px}
+    textarea{resize:none}
   </style>
 </head>
-
 <body>
 
 <div class="box">
@@ -105,10 +52,11 @@
   <div class="step">
     <b>② 选择打手等级</b>
     <div class="btns" id="levelBtns"></div>
+    <div class="hint">未选择单子前，等级不会生效。</div>
   </div>
 
   <div class="step">
-    <b>③ 下单份数</b>
+    <b>③ 下单份数（默认 1 份 = 1 小时）</b>
     <div class="qty">
       <button onclick="changeQty(-1)">−</button>
       <span id="qty">1</span>
@@ -116,47 +64,87 @@
     </div>
   </div>
 
+  <div class="step">
+    <b>④ 填写订单信息</b>
+    <div class="row2">
+      <input class="in" id="gameId" placeholder="游戏ID（必填）">
+      <input class="in" id="server" placeholder="区服/平台（必填）">
+    </div>
+    <div class="row2" style="margin-top:10px">
+      <input class="in" id="contact" placeholder="联系方式（微信号/QQ/电话，可选）">
+      <input class="in" id="time" placeholder="期望时间（可选，如今晚8点）">
+    </div>
+    <textarea class="in" id="note" style="margin-top:10px;height:90px" placeholder="备注（可选：打法要求/禁忌/队伍人数/进图方式等）"></textarea>
+    <div class="hint">建议你在备注里写清楚：要打多久/要不要教学/是否需要语音。</div>
+  </div>
+
+  <div class="step">
+    <b>订单汇总</b>
+    <div class="summary" id="summary">请先选择单子和等级。</div>
+  </div>
+
   <div class="price" id="price">¥ 0</div>
 
-  <button class="pay" id="payBtn" disabled>④ 立即付款</button>
+  <button class="pay" id="payBtn" disabled>⑤ 立即付款（弹出二维码）</button>
+  <div class="hint">付款完成后请截图保存，并把“订单号 + 截图”发给对接人确认。</div>
 </div>
 
-<!-- 支付弹窗 -->
 <div class="mask" id="mask">
   <div class="modal">
     <b>扫码付款</b>
     <div class="qr">
       <img id="qrImg" src="./pay-qr.png" alt="收款二维码">
     </div>
-    <div id="payMoney"></div>
-    <button onclick="closePay()">关闭</button>
+    <div id="payMoney" style="font-weight:900;margin:6px 0"></div>
+    <div style="font-size:12px;color:#64748b;line-height:1.55">
+      付款后请将 <b>订单号</b> 与 <b>付款截图</b> 发给对接人/打手确认接单。
+    </div>
+
+    <div class="copy">
+      <button class="btn2" onclick="copyOrder()">一键复制订单信息</button>
+      <button class="btn2" style="margin-top:8px" onclick="closePay()">关闭</button>
+    </div>
   </div>
 </div>
 
 <script>
-/* === 精确价目表（按你给的图） === */
+/* 精确价目表 */
 const PRICE = {
   "机密单护": { "娱乐":35, "技术":45, "巅峰":55, "魔王":70 },
   "机密双护": { "娱乐":60, "技术":80, "巅峰":100, "魔王":130 },
   "绝密单护": { "娱乐":45, "技术":60, "巅峰":70, "魔王":100 },
   "绝密双护": { "娱乐":85, "技术":100, "巅峰":130, "魔王":188 }
 };
-
 const LEVELS = ["娱乐","技术","巅峰","魔王"];
 
-let state = {
-  type: "",
-  level: "",
-  qty: 1
-};
+let state = { type:"", level:"", qty:1, orderNo:"" };
 
 const typeBtns = document.getElementById("typeBtns");
 const levelBtns = document.getElementById("levelBtns");
+const qtyDom = document.getElementById("qty");
 const priceDom = document.getElementById("price");
 const payBtn = document.getElementById("payBtn");
-const qtyDom = document.getElementById("qty");
+const summaryDom = document.getElementById("summary");
 
-/* 生成单子按钮 */
+const gameId = document.getElementById("gameId");
+const server = document.getElementById("server");
+const contact = document.getElementById("contact");
+const time = document.getElementById("time");
+const note = document.getElementById("note");
+
+function genOrderNo(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,"0");
+  const y = d.getFullYear();
+  const mo = pad(d.getMonth()+1);
+  const da = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mm = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  const rnd = Math.floor(Math.random()*900+100);
+  return `DF-${y}${mo}${da}-${hh}${mm}${ss}-${rnd}`;
+}
+
 Object.keys(PRICE).forEach(type=>{
   const b = document.createElement("button");
   b.textContent = type;
@@ -168,15 +156,13 @@ Object.keys(PRICE).forEach(type=>{
   typeBtns.appendChild(b);
 });
 
-/* 生成等级按钮 */
 LEVELS.forEach(level=>{
   const b = document.createElement("button");
   b.textContent = level;
   b.onclick = ()=>{
-    if(state.type){
-      state.level = level;
-      render();
-    }
+    if(!state.type) return;
+    state.level = level;
+    render();
   };
   levelBtns.appendChild(b);
 });
@@ -187,31 +173,98 @@ function changeQty(n){
   render();
 }
 
-function render(){
-  [...typeBtns.children].forEach(b=>{
-    b.classList.toggle("active", b.textContent === state.type);
-  });
-  [...levelBtns.children].forEach(b=>{
-    b.classList.toggle("active", b.textContent === state.level);
-  });
-
-  let total = 0;
-  if(state.type && state.level){
-    total = PRICE[state.type][state.level] * state.qty;
-  }
-  priceDom.textContent = "¥ " + total;
-  payBtn.disabled = total === 0;
+function total(){
+  if(!state.type || !state.level) return 0;
+  return PRICE[state.type][state.level] * state.qty;
 }
 
-/* 支付 */
+function validForm(){
+  return gameId.value.trim() && server.value.trim();
+}
+
+function render(){
+  [...typeBtns.children].forEach(b=>b.classList.toggle("active", b.textContent===state.type));
+  [...levelBtns.children].forEach(b=>b.classList.toggle("active", b.textContent===state.level));
+
+  const t = total();
+  priceDom.textContent = "¥ " + t;
+
+  // 汇总
+  if(!state.type || !state.level){
+    summaryDom.innerHTML = "请先选择 <strong>单子类型</strong> 和 <strong>打手等级</strong>。";
+  }else{
+    const unit = PRICE[state.type][state.level];
+    summaryDom.innerHTML =
+      `<div><strong>单子：</strong>${state.type}</div>`+
+      `<div><strong>等级：</strong>${state.level}</div>`+
+      `<div><strong>单价：</strong>${unit} 元/小时</div>`+
+      `<div><strong>份数：</strong>${state.qty}</div>`+
+      `<div><strong>金额：</strong>¥ ${t}</div>`+
+      `<div class="hint" style="margin-top:6px">请确认信息无误再付款。</div>`;
+  }
+
+  // 按钮启用条件：选完 + 表单必填
+  payBtn.disabled = !(t > 0 && validForm());
+}
+
+["input","change"].forEach(evt=>{
+  gameId.addEventListener(evt, render);
+  server.addEventListener(evt, render);
+  contact.addEventListener(evt, render);
+  time.addEventListener(evt, render);
+  note.addEventListener(evt, render);
+});
+
 payBtn.onclick = ()=>{
-  document.getElementById("payMoney").textContent = "金额： " + priceDom.textContent;
+  // 生成订单号
+  state.orderNo = genOrderNo();
+  const t = total();
+  document.getElementById("payMoney").textContent = `订单号：${state.orderNo} ｜ 金额：¥ ${t}`;
   document.getElementById("mask").style.display = "flex";
 };
 
 function closePay(){
   document.getElementById("mask").style.display = "none";
 }
+
+function buildOrderText(){
+  const t = total();
+  const unit = state.type && state.level ? PRICE[state.type][state.level] : 0;
+  return [
+    `【三角洲行动订单】`,
+    `订单号：${state.orderNo || "(未生成)"}`,
+    `单子：${state.type || "-"}`,
+    `等级：${state.level || "-"}`,
+    `单价：${unit} 元/小时`,
+    `份数：${state.qty}`,
+    `金额：¥ ${t}`,
+    `游戏ID：${gameId.value.trim() || "-"}`,
+    `区服/平台：${server.value.trim() || "-"}`,
+    `联系方式：${contact.value.trim() || "-"}`,
+    `期望时间：${time.value.trim() || "-"}`,
+    `备注：${note.value.trim() || "-"}`,
+    `提示：付款后请发订单号+截图确认`
+  ].join("\\n");
+}
+
+async function copyOrder(){
+  const text = buildOrderText();
+  try{
+    await navigator.clipboard.writeText(text);
+    alert("已复制订单信息，可直接发给对接人/打手。");
+  }catch(e){
+    // 兼容旧浏览器
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    alert("已复制订单信息。");
+  }
+}
+
+render();
 </script>
 
 </body>
