@@ -1,55 +1,97 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>三角洲行动下单系统</title>
+
   <style>
     body{
       margin:0;
-      font-family: system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",Arial;
-      background:#f4f7ff;
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
+      background:#f4f7ff;
+      font-family: system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",Arial;
     }
     .box{
+      width:380px;
       background:#fff;
       border-radius:16px;
       padding:20px;
-      width:380px;
       box-shadow:0 12px 30px rgba(0,0,0,.12);
     }
-    h1{text-align:center;margin:0 0 14px}
-    .step{margin-bottom:14px}
-    .step b{display:block;margin-bottom:6px}
+    h1{text-align:center;margin:0 0 16px}
+    .step{margin-bottom:16px}
+    .step b{display:block;margin-bottom:8px}
     .btns{display:flex;flex-wrap:wrap;gap:8px}
     button{
       padding:8px 12px;
       border-radius:10px;
       border:1px solid #cbd5e1;
       background:#fff;
-      cursor:pointer;
       font-weight:600;
+      cursor:pointer;
     }
-    button.active{background:#2563eb;color:#fff;border-color:#2563eb}
-    .qty{display:flex;gap:10px;align-items:center}
-    .qty button{width:36px}
-    .price{font-size:22px;font-weight:900;color:#16a34a;text-align:center;margin:10px 0}
-    .pay{width:100%;padding:12px;border:none;border-radius:12px;background:#2563eb;color:#fff;font-weight:900;cursor:pointer}
+    button.active{
+      background:#2563eb;
+      color:#fff;
+      border-color:#2563eb;
+    }
+    .qty{display:flex;align-items:center;gap:12px}
+    .qty button{width:36px;height:36px}
+    .price{
+      text-align:center;
+      font-size:24px;
+      font-weight:900;
+      color:#16a34a;
+      margin:16px 0;
+    }
+    .pay{
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:12px;
+      background:#2563eb;
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
     .pay:disabled{opacity:.5;cursor:not-allowed}
+
+    /* 弹窗 */
     .mask{
-      position:fixed;inset:0;background:rgba(0,0,0,.55);
-      display:none;align-items:center;justify-content:center;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
     }
     .modal{
-      background:#fff;border-radius:16px;padding:16px;width:300px;text-align:center;
+      background:#fff;
+      width:300px;
+      padding:16px;
+      border-radius:16px;
+      text-align:center;
     }
-    .qr{width:220px;height:220px;margin:10px auto;border-radius:12px;overflow:hidden}
-    .qr img{width:100%;height:100%;object-fit:contain}
+    .qr{
+      width:220px;
+      height:220px;
+      margin:12px auto;
+      border-radius:12px;
+      overflow:hidden;
+      background:#f1f5f9;
+    }
+    .qr img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
   </style>
 </head>
+
 <body>
 
 <div class="box">
@@ -68,9 +110,9 @@
   <div class="step">
     <b>③ 下单份数</b>
     <div class="qty">
-      <button onclick="chg(-1)">−</button>
+      <button onclick="changeQty(-1)">−</button>
       <span id="qty">1</span>
-      <button onclick="chg(1)">+</button>
+      <button onclick="changeQty(1)">+</button>
     </div>
   </div>
 
@@ -79,11 +121,12 @@
   <button class="pay" id="payBtn" disabled>④ 立即付款</button>
 </div>
 
+<!-- 支付弹窗 -->
 <div class="mask" id="mask">
   <div class="modal">
     <b>扫码付款</b>
     <div class="qr">
-      <img id="qrImg">
+      <img id="qrImg" src="./pay-qr.png" alt="收款二维码">
     </div>
     <div id="payMoney"></div>
     <button onclick="closePay()">关闭</button>
@@ -91,61 +134,85 @@
 </div>
 
 <script>
-const PRICE={
-  "机密单护":{娱乐:35,技术:45,巅峰:55,魔王:70},
-  "机密双护":{娱乐:60,技术:80,巅峰:100,魔王:130},
-  "绝密单护":{娱乐:45,技术:60,巅峰:70,魔王:100},
-  "绝密双护":{娱乐:85,技术:100,巅峰:130,魔王:188}
+/* === 精确价目表（按你给的图） === */
+const PRICE = {
+  "机密单护": { "娱乐":35, "技术":45, "巅峰":55, "魔王":70 },
+  "机密双护": { "娱乐":60, "技术":80, "巅峰":100, "魔王":130 },
+  "绝密单护": { "娱乐":45, "技术":60, "巅峰":70, "魔王":100 },
+  "绝密双护": { "娱乐":85, "技术":100, "巅峰":130, "魔王":188 }
 };
-const levels=["娱乐","技术","巅峰","魔王"];
-let state={type:"",level:"",qty:1};
 
-const QR_BASE64 =
-"data:image/png;base64,{{BASE64_QR}}";
+const LEVELS = ["娱乐","技术","巅峰","魔王"];
 
-const typeBtns=document.getElementById("typeBtns");
-const levelBtns=document.getElementById("levelBtns");
-const priceDom=document.getElementById("price");
-const payBtn=document.getElementById("payBtn");
-const qtyDom=document.getElementById("qty");
+let state = {
+  type: "",
+  level: "",
+  qty: 1
+};
 
-Object.keys(PRICE).forEach(t=>{
-  let b=document.createElement("button");
-  b.textContent=t;
-  b.onclick=()=>{state.type=t;state.level=\"\";render()};
+const typeBtns = document.getElementById("typeBtns");
+const levelBtns = document.getElementById("levelBtns");
+const priceDom = document.getElementById("price");
+const payBtn = document.getElementById("payBtn");
+const qtyDom = document.getElementById("qty");
+
+/* 生成单子按钮 */
+Object.keys(PRICE).forEach(type=>{
+  const b = document.createElement("button");
+  b.textContent = type;
+  b.onclick = ()=>{
+    state.type = type;
+    state.level = "";
+    render();
+  };
   typeBtns.appendChild(b);
 });
 
-levels.forEach(l=>{
-  let b=document.createElement("button");
-  b.textContent=l;
-  b.onclick=()=>{if(state.type){state.level=l;render()}};
+/* 生成等级按钮 */
+LEVELS.forEach(level=>{
+  const b = document.createElement("button");
+  b.textContent = level;
+  b.onclick = ()=>{
+    if(state.type){
+      state.level = level;
+      render();
+    }
+  };
   levelBtns.appendChild(b);
 });
 
-function chg(n){
-  state.qty=Math.max(1,state.qty+n);
-  qtyDom.textContent=state.qty;
+function changeQty(n){
+  state.qty = Math.max(1, state.qty + n);
+  qtyDom.textContent = state.qty;
   render();
 }
 
 function render(){
-  [...typeBtns.children].forEach(b=>b.classList.toggle("active",b.textContent===state.type));
-  [...levelBtns.children].forEach(b=>b.classList.toggle("active",b.textContent===state.level));
-  let p=state.type&&state.level?PRICE[state.type][state.level]*state.qty:0;
-  priceDom.textContent="¥ "+p;
-  payBtn.disabled=!p;
+  [...typeBtns.children].forEach(b=>{
+    b.classList.toggle("active", b.textContent === state.type);
+  });
+  [...levelBtns.children].forEach(b=>{
+    b.classList.toggle("active", b.textContent === state.level);
+  });
+
+  let total = 0;
+  if(state.type && state.level){
+    total = PRICE[state.type][state.level] * state.qty;
+  }
+  priceDom.textContent = "¥ " + total;
+  payBtn.disabled = total === 0;
 }
 
-payBtn.onclick=()=>{
-  document.getElementById("qrImg").src=QR_BASE64;
-  document.getElementById("payMoney").textContent="金额：¥ "+priceDom.textContent.replace("¥ ","");
-  document.getElementById("mask").style.display="flex";
+/* 支付 */
+payBtn.onclick = ()=>{
+  document.getElementById("payMoney").textContent = "金额： " + priceDom.textContent;
+  document.getElementById("mask").style.display = "flex";
 };
-function closePay(){document.getElementById("mask").style.display="none";}
+
+function closePay(){
+  document.getElementById("mask").style.display = "none";
+}
 </script>
 
 </body>
 </html>
-
-
