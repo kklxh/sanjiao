@@ -1,486 +1,151 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>三角洲行动下单系统</title>
   <style>
-    :root{
-      --bg:#f4f7ff;
-      --card:#ffffff;
-      --ink:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --brand:#2563eb;
-      --ok:#16a34a;
-      --danger:#ef4444;
-      --shadow: 0 12px 35px rgba(15,23,42,.12);
-      --r:18px;
-    }
-    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-      color:var(--ink);
-      background: radial-gradient(1200px 700px at 70% -10%, #dbeafe 0%, transparent 55%),
-                  radial-gradient(900px 600px at 20% 0%, #e0e7ff 0%, transparent 55%),
-                  var(--bg);
+      font-family: system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",Arial;
+      background:#f4f7ff;
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
+    }
+    .box{
+      background:#fff;
+      border-radius:16px;
       padding:20px;
+      width:380px;
+      box-shadow:0 12px 30px rgba(0,0,0,.12);
     }
-    .wrap{width:min(920px,100%);}
-    .header{
-      display:flex; align-items:flex-end; justify-content:space-between;
-      gap:12px; margin-bottom:14px;
-    }
-    .title{
-      font-size:22px; font-weight:800; letter-spacing:.2px;
-    }
-    .sub{font-size:13px;color:var(--muted)}
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:0;
-    }
-    @media (max-width: 860px){
-      .grid{grid-template-columns:1fr}
-    }
-    .left{padding:18px 18px 6px}
-    .right{
-      padding:18px;
-      border-left:1px solid var(--line);
-      background: linear-gradient(180deg,#ffffff 0%, #f8fafc 100%);
-    }
-    @media (max-width: 860px){
-      .right{border-left:none;border-top:1px solid var(--line)}
-    }
-    .step{
-      padding:14px;
-      border:1px solid var(--line);
-      border-radius:16px;
-      margin-bottom:12px;
+    h1{text-align:center;margin:0 0 14px}
+    .step{margin-bottom:14px}
+    .step b{display:block;margin-bottom:6px}
+    .btns{display:flex;flex-wrap:wrap;gap:8px}
+    button{
+      padding:8px 12px;
+      border-radius:10px;
+      border:1px solid #cbd5e1;
       background:#fff;
-    }
-    .step h3{
-      margin:0 0 10px;
-      font-size:14px;
-      display:flex; align-items:center; gap:8px;
-    }
-    .badge{
-      display:inline-flex; align-items:center; justify-content:center;
-      width:22px; height:22px;
-      border-radius:999px;
-      background:#e0e7ff;
-      color:#1e3a8a;
-      font-weight:800;
-      font-size:12px;
-      flex:0 0 auto;
-    }
-    .row{display:flex; flex-wrap:wrap; gap:10px}
-    .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--ink);
-      border-radius:14px;
-      padding:10px 12px;
-      font-weight:700;
-      font-size:13px;
       cursor:pointer;
-      transition:.12s transform, .12s background, .12s border-color;
-      user-select:none;
+      font-weight:600;
     }
-    .btn:hover{transform: translateY(-1px)}
-    .btn:active{transform: translateY(0)}
-    .btn.sel{
-      border-color: rgba(37,99,235,.55);
-      background: rgba(37,99,235,.08);
-      color:#1d4ed8;
-    }
-    .btn[disabled]{opacity:.45; cursor:not-allowed; transform:none}
-    .qty{
-      display:flex; align-items:center; gap:12px; margin-top:4px;
-    }
-    .qty button{
-      width:40px; height:40px; border-radius:14px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-size:18px; font-weight:900;
-      cursor:pointer;
-    }
-    .qty button:hover{background:#f8fafc}
-    .qty input{
-      width:88px;
-      height:40px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      text-align:center;
-      font-weight:800;
-      font-size:16px;
-      outline:none;
-      background:#fff;
-    }
-    .hint{
-      margin-top:8px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.55;
-    }
-    .priceBox{
-      border:1px dashed #cbd5e1;
-      border-radius:16px;
-      padding:14px;
-      background:#fff;
-    }
-    .kvs{display:grid; gap:10px}
-    .kv{
-      display:flex; align-items:baseline; justify-content:space-between;
-      gap:10px;
-      font-size:13px;
-      color:var(--muted);
-    }
-    .kv strong{color:var(--ink); font-size:14px}
-    .total{
-      display:flex; align-items:flex-end; justify-content:space-between;
-      margin-top:10px;
-    }
-    .total .num{
-      font-size:34px;
-      font-weight:900;
-      color:var(--ok);
-      letter-spacing:.4px;
-    }
-    .payBtn{
-      width:100%;
-      border:none;
-      background: linear-gradient(90deg,#2563eb 0%, #1d4ed8 100%);
-      color:#fff;
-      border-radius:16px;
-      padding:12px 14px;
-      font-weight:900;
-      font-size:14px;
-      cursor:pointer;
-      margin-top:12px;
-      box-shadow: 0 10px 25px rgba(37,99,235,.22);
-      transition:.12s transform, .12s filter;
-    }
-    .payBtn:hover{transform: translateY(-1px); filter: brightness(1.02)}
-    .payBtn:active{transform: translateY(0)}
-    .payBtn[disabled]{opacity:.55; cursor:not-allowed; box-shadow:none}
-    .mini{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.6;
-    }
-    .table{
-      margin-top:12px;
-      border-top:1px solid var(--line);
-      padding-top:12px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.6;
-    }
-
-    /* Modal */
-    .modalMask{
-      position:fixed; inset:0;
-      background: rgba(2,6,23,.55);
-      display:none;
-      align-items:center; justify-content:center;
-      padding:18px;
-      z-index:50;
+    button.active{background:#2563eb;color:#fff;border-color:#2563eb}
+    .qty{display:flex;gap:10px;align-items:center}
+    .qty button{width:36px}
+    .price{font-size:22px;font-weight:900;color:#16a34a;text-align:center;margin:10px 0}
+    .pay{width:100%;padding:12px;border:none;border-radius:12px;background:#2563eb;color:#fff;font-weight:900;cursor:pointer}
+    .pay:disabled{opacity:.5;cursor:not-allowed}
+    .mask{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;
     }
     .modal{
-      width:min(420px,100%);
-      background:#fff;
-      border-radius:20px;
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      border:1px solid rgba(226,232,240,.9);
+      background:#fff;border-radius:16px;padding:16px;width:300px;text-align:center;
     }
-    .modalHd{
-      padding:14px 16px;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border-bottom:1px solid var(--line);
-      background:#fff;
-    }
-    .modalBd{padding:16px}
-    .qrWrap{
-      width:260px; height:260px;
-      margin: 6px auto 10px;
-      border-radius:18px;
-      background:#f1f5f9;
-      border:1px solid var(--line);
-      display:flex; align-items:center; justify-content:center;
-      overflow:hidden;
-    }
-    .qrWrap img{width:100%; height:100%; object-fit:contain}
-    .money{
-      text-align:center;
-      font-weight:900;
-      font-size:14px;
-      margin:10px 0 12px;
-    }
-    .closeBtn{
-      width:100%;
-      padding:12px 14px;
-      border-radius:16px;
-      border:1px solid var(--line);
-      background:#fff;
-      font-weight:900;
-      cursor:pointer;
-    }
-    .closeBtn:hover{background:#f8fafc}
+    .qr{width:220px;height:220px;margin:10px auto;border-radius:12px;overflow:hidden}
+    .qr img{width:100%;height:100%;object-fit:contain}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="header">
-      <div>
-        <div class="title">三角洲行动下单系统</div>
-        <div class="sub">流程：选单子 → 选等级 → 选份数 → 扫码付款</div>
-      </div>
-      <div class="sub" id="statusText">未选择</div>
-    </div>
 
-    <div class="card grid">
-      <div class="left">
-        <!-- Step 1 -->
-        <div class="step">
-          <h3><span class="badge">1</span>选择下单类型</h3>
-          <div class="row" id="orderTypeRow"></div>
-          <div class="hint">按你给的价目表：机密/绝密 + 单护/双护。</div>
-        </div>
+<div class="box">
+  <h1>三角洲行动下单系统</h1>
 
-        <!-- Step 2 -->
-        <div class="step">
-          <h3><span class="badge">2</span>选择打手等级</h3>
-          <div class="row" id="levelRow"></div>
-          <div class="hint">等级对应：娱乐 / 技术 / 巅峰 / 魔王。</div>
-        </div>
+  <div class="step">
+    <b>① 选择单子</b>
+    <div class="btns" id="typeBtns"></div>
+  </div>
 
-        <!-- Step 3 -->
-        <div class="step">
-          <h3><span class="badge">3</span>选择下单份数</h3>
-          <div class="qty">
-            <button id="minusBtn" aria-label="减">−</button>
-            <input id="qtyInput" type="number" min="1" step="1" value="1" />
-            <button id="plusBtn" aria-label="加">+</button>
-          </div>
-          <div class="hint">默认 <b>1份 = 1小时</b> 计价（你的价目表单位是 /H）。如需改成“局/单/份”，只改文案即可。</div>
-        </div>
-      </div>
+  <div class="step">
+    <b>② 选择打手等级</b>
+    <div class="btns" id="levelBtns"></div>
+  </div>
 
-      <div class="right">
-        <div class="priceBox">
-          <div class="kvs">
-            <div class="kv"><span>已选单子</span><strong id="selOrder">—</strong></div>
-            <div class="kv"><span>已选等级</span><strong id="selLevel">—</strong></div>
-            <div class="kv"><span>单价（元/小时）</span><strong id="unitPrice">—</strong></div>
-            <div class="kv"><span>份数（小时）</span><strong id="selQty">1</strong></div>
-          </div>
-          <div class="total">
-            <div style="color:var(--muted);font-weight:700;">应付金额</div>
-            <div class="num" id="totalPrice">¥ 0</div>
-          </div>
-
-          <button class="payBtn" id="payBtn" disabled>④ 立即付款（弹出二维码）</button>
-
-          <div class="mini">
-            付款提示：扫码后付款金额应与页面显示一致。付款完成后建议截图保存并联系对接人确认订单。
-          </div>
-
-          <div class="table">
-            <b>价目表（来自你提供的图片）</b><br/>
-            机密单护：娱乐35 / 技术45 / 巅峰55 / 魔王70（元/小时）<br/>
-            机密双护：娱乐60 / 技术80 / 巅峰100 / 魔王130（元/小时）<br/>
-            绝密单护：娱乐45 / 技术60 / 巅峰70 / 魔王100（元/小时）<br/>
-            绝密双护：娱乐85 / 技术100 / 巅峰130 / 魔王188（元/小时）
-          </div>
-        </div>
-      </div>
+  <div class="step">
+    <b>③ 下单份数</b>
+    <div class="qty">
+      <button onclick="chg(-1)">−</button>
+      <span id="qty">1</span>
+      <button onclick="chg(1)">+</button>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div class="modalMask" id="modalMask" role="dialog" aria-modal="true" aria-label="扫码付款">
-    <div class="modal">
-      <div class="modalHd">扫码付款</div>
-      <div class="modalBd">
-        <div class="qrWrap">
-          <img id="qrImg" alt="收款二维码" />
-        </div>
-        <div class="money">金额：<span id="modalMoney">¥ 0</span></div>
-        <button class="closeBtn" id="closeBtn">关闭</button>
-      </div>
+  <div class="price" id="price">¥ 0</div>
+
+  <button class="pay" id="payBtn" disabled>④ 立即付款</button>
+</div>
+
+<div class="mask" id="mask">
+  <div class="modal">
+    <b>扫码付款</b>
+    <div class="qr">
+      <img id="qrImg">
     </div>
+    <div id="payMoney"></div>
+    <button onclick="closePay()">关闭</button>
   </div>
+</div>
 
-  <script>
-    // === 价格表：按你图里的“/H”精确写死（不再用倍率，避免算错） ===
-    const PRICE = {
-      "机密单护": { "娱乐": 35, "技术": 45, "巅峰": 55, "魔王": 70 },
-      "机密双护": { "娱乐": 60, "技术": 80, "巅峰": 100, "魔王": 130 },
-      "绝密单护": { "娱乐": 45, "技术": 60, "巅峰": 70, "魔王": 100 },
-      "绝密双护": { "娱乐": 85, "技术": 100, "巅峰": 130, "魔王": 188 }
-    };
-    const LEVELS = ["娱乐","技术","巅峰","魔王"];
+<script>
+const PRICE={
+  "机密单护":{娱乐:35,技术:45,巅峰:55,魔王:70},
+  "机密双护":{娱乐:60,技术:80,巅峰:100,魔王:130},
+  "绝密单护":{娱乐:45,技术:60,巅峰:70,魔王:100},
+  "绝密双护":{娱乐:85,技术:100,巅峰:130,魔王:188}
+};
+const levels=["娱乐","技术","巅峰","魔王"];
+let state={type:"",level:"",qty:1};
 
-    // ✅ 你的收款二维码（已内嵌，不需要放文件，不会丢图）
-    const PAY_QR_DATA_URI =
-      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAacAAAGbCAIAAADvNcgZAAAQAElEQVR4AezdB5xlVZU18O7GmU9JggKC" +
-      "..." +
-      "AAAAAElFTkSuQmCC";
+const QR_BASE64 =
+"data:image/png;base64,{{BASE64_QR}}";
 
-    // ⚠️ 为了不把聊天刷屏，我把 Base64 中间部分用 ... 省略了
-    // 你需要我把完整 Base64 填进去的话，回我一句： “发完整二维码版本”
-    // 我就把完整可运行版本发你（复制即可用）。
+const typeBtns=document.getElementById("typeBtns");
+const levelBtns=document.getElementById("levelBtns");
+const priceDom=document.getElementById("price");
+const payBtn=document.getElementById("payBtn");
+const qtyDom=document.getElementById("qty");
 
-    // —— 状态 ——
-    let state = {
-      orderType: "",
-      level: "",
-      qty: 1
-    };
+Object.keys(PRICE).forEach(t=>{
+  let b=document.createElement("button");
+  b.textContent=t;
+  b.onclick=()=>{state.type=t;state.level=\"\";render()};
+  typeBtns.appendChild(b);
+});
 
-    // —— DOM ——
-    const orderTypeRow = document.getElementById("orderTypeRow");
-    const levelRow = document.getElementById("levelRow");
-    const selOrder = document.getElementById("selOrder");
-    const selLevel = document.getElementById("selLevel");
-    const selQty = document.getElementById("selQty");
-    const unitPrice = document.getElementById("unitPrice");
-    const totalPrice = document.getElementById("totalPrice");
-    const statusText = document.getElementById("statusText");
+levels.forEach(l=>{
+  let b=document.createElement("button");
+  b.textContent=l;
+  b.onclick=()=>{if(state.type){state.level=l;render()}};
+  levelBtns.appendChild(b);
+});
 
-    const minusBtn = document.getElementById("minusBtn");
-    const plusBtn = document.getElementById("plusBtn");
-    const qtyInput = document.getElementById("qtyInput");
+function chg(n){
+  state.qty=Math.max(1,state.qty+n);
+  qtyDom.textContent=state.qty;
+  render();
+}
 
-    const payBtn = document.getElementById("payBtn");
-    const modalMask = document.getElementById("modalMask");
-    const closeBtn = document.getElementById("closeBtn");
-    const modalMoney = document.getElementById("modalMoney");
-    const qrImg = document.getElementById("qrImg");
+function render(){
+  [...typeBtns.children].forEach(b=>b.classList.toggle("active",b.textContent===state.type));
+  [...levelBtns.children].forEach(b=>b.classList.toggle("active",b.textContent===state.level));
+  let p=state.type&&state.level?PRICE[state.type][state.level]*state.qty:0;
+  priceDom.textContent="¥ "+p;
+  payBtn.disabled=!p;
+}
 
-    function money(n){
-      return "¥ " + (Math.round(n)).toString();
-    }
+payBtn.onclick=()=>{
+  document.getElementById("qrImg").src=QR_BASE64;
+  document.getElementById("payMoney").textContent="金额：¥ "+priceDom.textContent.replace("¥ ","");
+  document.getElementById("mask").style.display="flex";
+};
+function closePay(){document.getElementById("mask").style.display="none";}
+</script>
 
-    function computeUnit(){
-      if(!state.orderType || !state.level) return 0;
-      return PRICE[state.orderType][state.level] || 0;
-    }
-
-    function computeTotal(){
-      return computeUnit() * state.qty;
-    }
-
-    function renderOrderTypes(){
-      orderTypeRow.innerHTML = "";
-      Object.keys(PRICE).forEach(type=>{
-        const b = document.createElement("button");
-        b.className = "btn" + (state.orderType === type ? " sel" : "");
-        b.textContent = type;
-        b.onclick = ()=>{
-          state.orderType = type;
-          state.level = ""; // 选单子后清空等级
-          renderAll();
-        };
-        orderTypeRow.appendChild(b);
-      });
-    }
-
-    function renderLevels(){
-      levelRow.innerHTML = "";
-      LEVELS.forEach(lv=>{
-        const b = document.createElement("button");
-        const disabled = !state.orderType;
-        b.className = "btn" + (state.level === lv ? " sel" : "");
-        b.textContent = lv;
-        b.disabled = disabled;
-        b.onclick = ()=>{
-          state.level = lv;
-          renderAll();
-        };
-        levelRow.appendChild(b);
-      });
-    }
-
-    function renderSummary(){
-      selOrder.textContent = state.orderType || "—";
-      selLevel.textContent = state.level || "—";
-      selQty.textContent = state.qty;
-      const u = computeUnit();
-      unitPrice.textContent = u ? (u + " 元/小时") : "—";
-      totalPrice.textContent = money(computeTotal());
-
-      const ok = state.orderType && state.level && state.qty >= 1;
-      payBtn.disabled = !ok;
-
-      if(!state.orderType) statusText.textContent = "请选择单子类型";
-      else if(!state.level) statusText.textContent = "请选择打手等级";
-      else statusText.textContent = "可付款";
-    }
-
-    function bindQty(){
-      minusBtn.onclick = ()=>{
-        state.qty = Math.max(1, state.qty - 1);
-        qtyInput.value = state.qty;
-        renderSummary();
-      };
-      plusBtn.onclick = ()=>{
-        state.qty = state.qty + 1;
-        qtyInput.value = state.qty;
-        renderSummary();
-      };
-      qtyInput.addEventListener("input", ()=>{
-        const v = parseInt(qtyInput.value, 10);
-        state.qty = Number.isFinite(v) && v >= 1 ? v : 1;
-        renderSummary();
-      });
-    }
-
-    function bindPay(){
-      payBtn.onclick = ()=>{
-        // 这里展示二维码
-        qrImg.src = PAY_QR_DATA_URI;
-        modalMoney.textContent = money(computeTotal());
-        modalMask.style.display = "flex";
-      };
-      closeBtn.onclick = ()=> modalMask.style.display = "none";
-      modalMask.addEventListener("click", (e)=>{
-        if(e.target === modalMask) modalMask.style.display = "none";
-      });
-      window.addEventListener("keydown",(e)=>{
-        if(e.key === "Escape") modalMask.style.display = "none";
-      });
-    }
-
-    function renderAll(){
-      renderOrderTypes();
-      renderLevels();
-      renderSummary();
-    }
-
-    // init
-    renderAll();
-    bindQty();
-    bindPay();
-  </script>
 </body>
 </html>
+
 
