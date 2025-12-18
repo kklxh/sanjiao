@@ -1,0 +1,163 @@
+import React, { useMemo, useState } from "react";
+import { Minus, Plus, ImageOff } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+/**
+ * 三角洲行动下单系统（前端演示）
+ * 流程：选择单子 → 选择打手等级 → 选择份数 → 弹出付款二维码
+ *
+ * ✅ 二维码不显示的原因通常是“图片路径找不到”。
+ * 你需要把二维码图片放到项目的 public 目录：
+ * - Next.js：/public/pay-qr.png  然后用 src="/pay-qr.png"
+ * - Vite/CRA：/public/pay-qr.png 或 src/assets 后用 import
+ */
+
+export default function DeltaForceOrderSite() {
+  // 你可按你的价目表继续精确修改：这里先用基础价 + 等级倍率示例
+  const orders = {
+    "机密单护": { base: 35, levels: ["娱乐", "技术", "巅峰", "魔王"] },
+    "机密双护": { base: 60, levels: ["娱乐", "技术", "巅峰", "魔王"] },
+    "绝密单护": { base: 45, levels: ["娱乐", "技术", "巅峰", "魔王"] },
+    "绝密双护": { base: 85, levels: ["娱乐", "技术", "巅峰", "魔王"] },
+  };
+
+  const levelMultiplier = {
+    娱乐: 1,
+    技术: 1.3,
+    巅峰: 1.6,
+    魔王: 2.2,
+  };
+
+  const [orderType, setOrderType] = useState("");
+  const [level, setLevel] = useState("");
+  const [count, setCount] = useState(1);
+  const [showPay, setShowPay] = useState(false);
+  const [qrOk, setQrOk] = useState(true);
+
+  const price = useMemo(() => {
+    if (!orderType || !level) return 0;
+    return Math.round(orders[orderType].base * levelMultiplier[level] * count);
+  }, [orderType, level, count]);
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <Card className="max-w-lg w-full rounded-3xl shadow-lg">
+        <CardContent className="p-6 space-y-6">
+          <h1 className="text-xl font-semibold text-center">三角洲行动下单系统</h1>
+
+          {/* ① 选择单子 */}
+          <div>
+            <div className="mb-2 font-medium">① 选择下单类型</div>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.keys(orders).map((k) => (
+                <Button
+                  key={k}
+                  variant={orderType === k ? "default" : "outline"}
+                  onClick={() => {
+                    setOrderType(k);
+                    setLevel("");
+                  }}
+                >
+                  {k}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* ② 选择等级 */}
+          {orderType && (
+            <div>
+              <div className="mb-2 font-medium">② 选择打手等级</div>
+              <div className="grid grid-cols-4 gap-2">
+                {orders[orderType].levels.map((l) => (
+                  <Button
+                    key={l}
+                    size="sm"
+                    variant={level === l ? "default" : "outline"}
+                    onClick={() => setLevel(l)}
+                  >
+                    {l}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ③ 数量 */}
+          {level && (
+            <div>
+              <div className="mb-2 font-medium">③ 下单份数</div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setCount((c) => Math.max(1, c - 1))}>
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="text-lg font-semibold">{count}</span>
+                <Button variant="outline" onClick={() => setCount((c) => c + 1)}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 金额 */}
+          {price > 0 && (
+            <div className="text-center">
+              <div className="text-sm text-slate-500">应付金额</div>
+              <div className="text-3xl font-bold text-emerald-600">¥ {price}</div>
+            </div>
+          )}
+
+          {/* ④ 支付 */}
+          {price > 0 && (
+            <Button className="w-full" onClick={() => setShowPay(true)}>
+              ④ 立即付款
+            </Button>
+          )}
+
+          {/* 支付二维码 */}
+          {showPay && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+              <Card className="rounded-2xl p-6 w-80">
+                <div className="text-center space-y-3">
+                  <h2 className="font-semibold">扫码付款</h2>
+
+                  <div className="h-52 w-52 mx-auto bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden">
+                    {qrOk ? (
+                      <img
+                        src="/pay-qr.png"
+                        alt="收款二维码"
+                        className="h-full w-full object-contain"
+                        onError={() => setQrOk(false)}
+                      />
+                    ) : (
+                      <div className="p-4 text-slate-600 text-sm">
+                        <div className="flex items-center justify-center gap-2 font-medium">
+                          <ImageOff className="h-4 w-4" />
+                          二维码图片没找到
+                        </div>
+                        <div className="mt-2 text-xs leading-relaxed text-slate-500 text-left">
+                          请把二维码文件命名为 <b>pay-qr.png</b> 并放到：
+                          <ul className="list-disc pl-5 mt-1">
+                            <li>Next.js：<b>public/pay-qr.png</b></li>
+                            <li>Vite/CRA：<b>public/pay-qr.png</b></li>
+                          </ul>
+                          然后刷新页面。
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="text-sm">金额：¥ {price}</div>
+                  <Button variant="outline" className="w-full" onClick={() => { setShowPay(false); setQrOk(true); }}>
+                    关闭
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
